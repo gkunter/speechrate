@@ -4,7 +4,8 @@
 #
 # Copyright 2019, Gero Kunter (gero.kunter@uni-siegen.de)
 #
-# Redistribution and use in source and binary forms, with or without # modification, are permitted provided that the following conditions are met:
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
 #
 # 1. Redistributions of source code must retain the above copyright notice,
 # this list of conditions and the following disclaimer.
@@ -25,13 +26,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from pprint import pprint
-
 # The following list of labels is used to deliminate the context windows for
 # determining the speech rate:
 BREAK_LABELS = ("<SIL>", "<LAUGH>", "<IVER>", "<UNKNOWN>", "<VOCNOISE>",
                 "<NOISE>",
                 "{B_TRANS}", "{E_TRANS}")
+
 # Labels are described in Table 4 of the Buckeye Manual
 # https://buckeyecorpus.osu.edu/BuckeyeCorpusmanual.pdf
 #
@@ -49,6 +49,7 @@ BREAK_LABELS = ("<SIL>", "<LAUGH>", "<IVER>", "<UNKNOWN>", "<VOCNOISE>",
 # context window also if the speaker produces a word hesitantly, you'd add
 # "<HES-" (with quotation marks, with only an opening '<' but no closing one)
 # to the variable.
+
 
 def get_context(lines, ref_pos, span):
     """
@@ -89,9 +90,15 @@ def get_context(lines, ref_pos, span):
     # Skip the header information from the Buckeye .words files if it is
     # included in the list of lines:
     if "#" in lines:
-        lines = lines[(lines.index("#") + 1):]
+        header_pos = lines.index("#")
+        lines = lines[(header_pos + 1):]
     elif "#\n" in lines:
-        lines = lines[(lines.index("#\n") + 1):]
+        header_pos = lines.index("#\n")
+        lines = lines[(header_pos + 1):]
+    else:
+        header_pos = 0
+
+    ref_pos = ref_pos - header_pos - 1
 
     # Determine the extent of the left and the right context windows around the
     # reference token. Each window will contain up to 'span' tokens, but can
@@ -101,7 +108,7 @@ def get_context(lines, ref_pos, span):
     # the left context window will include one additional token, and the right
     # context window will include the reference token.
     #
-    l_start = max(0, ref_pos - span - 1)
+    l_start = max(0, ref_pos - span - 2)
     r_end = min(len(lines), ref_pos + span + 1)
 
     # l_dist and r_dist will contain the temporal distance of the tokens in the
